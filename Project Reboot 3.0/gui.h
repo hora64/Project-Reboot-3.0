@@ -76,7 +76,7 @@ extern inline bool bHandleDeath = true;
 extern inline bool bUseCustomMap = false;
 extern inline std::string CustomMapName = "";
 extern inline int AmountToSubtractIndex = 1;
-extern inline int SecondsUntilTravel = 5;
+extern inline int SecondsUntilTravel = 30;
 extern inline bool bSwitchedInitialLevel = false;
 extern inline bool bIsInAutoRestart = false;
 extern inline float AutoBusStartSeconds = 60;
@@ -523,7 +523,7 @@ static inline void PlayerTabs()
 
 static inline DWORD WINAPI LateGameThread(LPVOID)
 {
-	float MaxTickRate = 60.0f;
+	float MaxTickRate = Globals::tickRate;
 
 	auto GameMode = Cast<AFortGameModeAthena>(GetWorld()->GetGameMode());
 	auto GameState = Cast<AFortGameStateAthena>(GameMode->GetGameState());
@@ -1433,6 +1433,7 @@ static inline void PregameUI()
 		}
 
 		ImGui::SliderInt("Seconds until load into map", &SecondsUntilTravel, 1, 100);
+		ImGui::SliderFloat("Server Tickrate", &Globals::tickRate, 1.0f, 128.0f);
 	}
 
 	ImGui::SliderInt("Players required to start the match", &WarmupRequiredPlayerCount, 1, 100);
