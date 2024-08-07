@@ -1433,7 +1433,7 @@ static inline void PregameUI()
 		}
 
 		ImGui::SliderInt("Seconds until load into map", &SecondsUntilTravel, 1, 100);
-		ImGui::SliderFloat("Server Tickrate", &Globals::tickRate, 1.0f, 128.0f);
+		ImGui::SliderFloat("Server Tickrate", &Globals::tickRate, 1.0f, 128.0f, "%.0f", 1.0f);
 	}
 
 	ImGui::SliderInt("Players required to start the match", &WarmupRequiredPlayerCount, 1, 100);
