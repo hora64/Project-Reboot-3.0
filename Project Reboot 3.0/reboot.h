@@ -406,7 +406,7 @@ namespace MemberOffsets
 	}
 }
 
-static inline float GetMaxTickRateHook() { return 60.f; }
+static inline float GetMaxTickRateHook() { return Globals::tickRate; }
 
 #define VALIDATEOFFSET(offset) if (!offset) LOG_WARN(LogDev, "[{}] Invalid offset", __FUNCTIONNAME__);
 

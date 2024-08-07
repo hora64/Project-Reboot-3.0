@@ -17,7 +17,7 @@ namespace Globals
 	extern inline bool bInfiniteMaterials = true;
 	extern inline bool bInfiniteAmmo = true;
 	extern inline bool bShouldUseReplicationGraph = false;
-
+	extern inline float tickRate = 30.f;
 	extern inline bool bHitReadyToStartMatch = false;
 	extern inline bool bInitializedPlaylist = false;
 	extern inline bool bStartedListening = false;
