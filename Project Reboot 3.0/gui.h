@@ -523,7 +523,7 @@ static inline void PlayerTabs()
 
 static inline DWORD WINAPI LateGameThread(LPVOID)
 {
-	float MaxTickRate = 30;
+	float MaxTickRate = 64;
 
 	auto GameMode = Cast<AFortGameModeAthena>(GetWorld()->GetGameMode());
 	auto GameState = Cast<AFortGameStateAthena>(GameMode->GetGameState());
