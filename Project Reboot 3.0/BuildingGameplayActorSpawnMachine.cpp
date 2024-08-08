@@ -111,8 +111,8 @@ void ABuildingGameplayActorSpawnMachine::RebootingDelegateHook(ABuildingGameplay
 
 	PlayerController->ClientClearDeathNotification();
 
-	NewPawn->SetHealth(100);
-	NewPawn->SetMaxHealth(100);
+	NewPawn->SetHealth(Globals::playerSpawnHealth);
+	NewPawn->SetMaxHealth(Globals::playerMaxHealth);
 
 	static auto RebootCounterOffset = PlayerState->GetOffset("RebootCounter");
 	PlayerState->Get<int>(RebootCounterOffset)++;

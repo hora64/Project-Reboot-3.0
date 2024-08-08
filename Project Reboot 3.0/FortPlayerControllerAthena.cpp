@@ -431,7 +431,7 @@ void AFortPlayerControllerAthena::ServerAcknowledgePossessionHook(APlayerControl
 
 	if (OldAcknowledgedPawn != PawnAsFort)
 	{
-		PawnAsFort->SetShield(StartingShield);
+		PawnAsFort->SetShield((float)Globals::playerSpawnShield);
 	}
 
 	if (Globals::bNoMCP)

@@ -258,11 +258,8 @@ void AFortPlayerController::ServerRepairBuildingActorHook(AFortPlayerController*
 
 	// todo not hardcode these
 
-	float BuildingCost = 10;
-	float RepairCostMultiplier = 0.75;
-
 	float BuildingHealthPercentLost = 1.0 - BuildingHealthPercent;
-	float RepairCostUnrounded = (BuildingCost * BuildingHealthPercentLost) * RepairCostMultiplier;
+	float RepairCostUnrounded = (Globals::buildingCost * BuildingHealthPercentLost) * Globals::repairCostMultiplier;
 	float RepairCost = std::floor(RepairCostUnrounded > 0 ? RepairCostUnrounded < 1 ? 1 : RepairCostUnrounded : 0);
 
 	if (RepairCost < 0)
@@ -790,11 +787,11 @@ void AFortPlayerController::ServerAttemptAircraftJumpHook(AFortPlayerController*
 
 	if (NewPawnAsFort)
 	{
-		NewPawnAsFort->SetHealth(100); // needed with server restart player?
+		NewPawnAsFort->SetHealth(Globals::playerSpawnHealth); // needed with server restart player?
 		
 		if (Globals::bLateGame)
 		{
-			NewPawnAsFort->SetShield(100);
+			NewPawnAsFort->SetShield(Globals::playerSpawnShield);
 
 			NewPawnAsFort->TeleportTo(AircraftToJumpFrom->GetActorLocation(), FRotator());
 		}
@@ -1395,6 +1392,49 @@ void AFortPlayerController::ClientOnPawnDiedHook(AFortPlayerController* PlayerCo
 
 		// LOG_INFO(LogDev, "Reported kill.");
 
+		auto KillerAbilityComp = KillerPlayerState->GetAbilitySystemComponent();
+
+		if (KillerAbilityComp)
+		{
+			auto ActivatableAbilities = KillerAbilityComp->GetActivatableAbilities();
+			auto& Items = ActivatableAbilities->GetItems();
+			for (size_t i = 0; i < Items.Num(); i++)
+			{
+				auto& Item = Items.At(i, FGameplayAbilitySpec::GetStructSize());
+				auto Ability = Item.GetAbility();
+				if (Ability && Ability->ClassPrivate && Ability->ClassPrivate->GetName().contains("Siphon"))
+				{
+					FGameplayTag Tag{};
+					Tag.TagName = UKismetStringLibrary::Conv_StringToName(TEXT("GameplayCue.Shield.PotionConsumed"));
+
+					auto NetMulticast_InvokeGameplayCueAdded = FindObject<UFunction>(L"/Script/GameplayAbilities.AbilitySystemComponent:NetMulticast_InvokeGameplayCueAdded");
+					auto NetMulticast_InvokeGameplayCueExecuted = FindObject<UFunction>(L"/Script/GameplayAbilities.AbilitySystemComponent:NetMulticast_InvokeGameplayCueExecuted");
+
+					if (!NetMulticast_InvokeGameplayCueAdded || !NetMulticast_InvokeGameplayCueExecuted)
+						break;
+
+					static auto GameplayCueTagOffsetAdded = NetMulticast_InvokeGameplayCueAdded->GetOffsetFunc("GameplayCueTag");
+					static auto GameplayCueTagOffsetExecuted = NetMulticast_InvokeGameplayCueExecuted->GetOffsetFunc("GameplayCueTag");
+					static auto PredictionKeyOffsetAdded = NetMulticast_InvokeGameplayCueAdded->GetOffsetFunc("PredictionKey");
+
+					auto AddedParams = Alloc<void>(NetMulticast_InvokeGameplayCueAdded->GetPropertiesSize());
+					auto ExecutedParams = Alloc<void>(NetMulticast_InvokeGameplayCueExecuted->GetPropertiesSize());
+
+					if (!AddedParams || !ExecutedParams)
+						break;
+
+					*(FGameplayTag*)(int64(AddedParams) + GameplayCueTagOffsetAdded) = Tag;
+					*(FGameplayTag*)(int64(ExecutedParams) + GameplayCueTagOffsetExecuted) = Tag;
+					//(FPredictionKey*)(int64(AddedParams) + PredictionKeyOffsetAdded) = Tag;
+
+					KillerAbilityComp->ProcessEvent(NetMulticast_InvokeGameplayCueAdded, AddedParams);
+					KillerAbilityComp->ProcessEvent(NetMulticast_InvokeGameplayCueExecuted, ExecutedParams);
+
+					break;
+				}
+			}
+		}
+
 		if (AmountOfHealthSiphon != 0)
 		{
 			if (KillerPawn && KillerPawn != DeadPawn)
@@ -1402,24 +1442,22 @@ void AFortPlayerController::ClientOnPawnDiedHook(AFortPlayerController* PlayerCo
 				float Health = KillerPawn->GetHealth();
 				float Shield = KillerPawn->GetShield();
 
-				int MaxHealth = 100;
-				int MaxShield = 100;
 				int AmountGiven = 0;
 				/*
 				int ShieldGiven = 0;
 				int HealthGiven = 0;
 				*/
 
-				if ((MaxHealth - Health) > 0)
+				if ((Globals::playerMaxHealth - Health) > 0)
 				{
-					int AmountToGive = MaxHealth - Health >= AmountOfHealthSiphon ? AmountOfHealthSiphon : MaxHealth - Health;
+					int AmountToGive = Globals::playerMaxHealth - Health >= AmountOfHealthSiphon ? AmountOfHealthSiphon : Globals::playerMaxHealth - Health;
 					KillerPawn->SetHealth(Health + AmountToGive);
 					AmountGiven += AmountToGive;
 				}
 
-				if ((MaxShield - Shield) > 0 && AmountGiven < AmountOfHealthSiphon)
+				if ((Globals::playerMaxShield - Shield) > 0 && AmountGiven < AmountOfHealthSiphon)
 				{
-					int AmountToGive = MaxShield - Shield >= AmountOfHealthSiphon ? AmountOfHealthSiphon : MaxShield - Shield;
+					int AmountToGive = Globals::playerMaxShield - Shield >= AmountOfHealthSiphon ? AmountOfHealthSiphon : Globals::playerMaxShield - Shield;
 					AmountToGive -= AmountGiven;
 
 					if (AmountToGive > 0)

@@ -75,7 +75,7 @@ void AFortPlayerPawn::ServerReviveFromDBNOHook(AFortPlayerPawn* Pawn, AControlle
 	Pawn->SetDBNO(false);
 	Pawn->SetHasPlayedDying(false);
 
-	Pawn->SetHealth(30); // TODO Get value from SetByCallerReviveHealth?
+	Pawn->SetHealth(Globals::playerDBNOReviveHealth); // TODO Get value from SetByCallerReviveHealth?
 
 	Pawn->OnRep_IsDBNO();
 

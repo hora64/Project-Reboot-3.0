@@ -308,8 +308,8 @@ public:
 
 		GameState->AddPlayerStateToGameMemberInfo(PlayerState);
 
-		Pawn->SetHealth(100);
-		Pawn->SetMaxHealth(100);
+		Pawn->SetHealth(Globals::botSpawnHealth);
+		Pawn->SetMaxHealth(Globals::botMaxHealth);
 
 		auto PlayerAbilitySet = GetPlayerAbilitySet();
 		auto AbilitySystemComponent = PlayerState->GetAbilitySystemComponent();

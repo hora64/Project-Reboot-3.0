@@ -69,7 +69,6 @@
 
 extern inline int StartReverseZonePhase = 7;
 extern inline int EndReverseZonePhase = 5;
-extern inline float StartingShield = 0;
 extern inline bool bEnableReverseZone = false;
 extern inline int AmountOfPlayersWhenBusStart = 0; 
 extern inline bool bHandleDeath = true;
@@ -110,7 +109,7 @@ static inline LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM 
 static inline void SetIsLategame(bool Value)
 {
 	Globals::bLateGame.store(Value);
-	StartingShield = Value ? 100 : 0;
+	Globals::playerSpawnShield = Value ? 100 : 0;
 }
 
 static inline bool HasAnyCalendarModification()
@@ -523,8 +522,6 @@ static inline void PlayerTabs()
 
 static inline DWORD WINAPI LateGameThread(LPVOID)
 {
-	float MaxTickRate = Globals::tickRate;
-
 	auto GameMode = Cast<AFortGameModeAthena>(GetWorld()->GetGameMode());
 	auto GameState = Cast<AFortGameStateAthena>(GameMode->GetGameState());
 
@@ -564,7 +561,7 @@ static inline DWORD WINAPI LateGameThread(LPVOID)
 
 	while (GetAircrafts().size() <= 0)
 	{
-		Sleep(1000 / MaxTickRate);
+		Sleep(1000 / Globals::tickRate);
 	}
 
 	static auto SafeZoneLocationsOffset = GameMode->GetOffset("SafeZoneLocations");
@@ -616,7 +613,7 @@ static inline DWORD WINAPI LateGameThread(LPVOID)
 
 	while (GameState->GetGamePhase() != EAthenaGamePhase::Aircraft)
 	{
-		Sleep(1000 / MaxTickRate);
+		Sleep(1000 / Globals::tickRate);
 	}
 
 	/*
@@ -645,7 +642,7 @@ static inline DWORD WINAPI LateGameThread(LPVOID)
 
 	while (GameState->GetGamePhase() == EAthenaGamePhase::Aircraft)
 	{
-		Sleep(1000 / MaxTickRate);
+		Sleep(1000 / Globals::tickRate);
 	}
 
 	static auto World_NetDriverOffset = GetWorld()->GetOffset("NetDriver");
@@ -1138,7 +1135,15 @@ static inline void MainUI()
 			static std::string ItemToGrantEveryone;
 			static int AmountToGrantEveryone = 1;
 
-			ImGui::InputFloat("Starting Shield", &StartingShield);
+			ImGui::SliderInt("Player Max Health", &Globals::playerMaxHealth, 0, 200);
+			ImGui::SliderInt("Player Starting Health", &Globals::playerSpawnHealth, 0, 200);
+			ImGui::SliderInt("Player DBNO Revive Health", &Globals::playerDBNOReviveHealth, 0, 100);
+			ImGui::SliderInt("Player Max Shield", &Globals::playerMaxShield, 0, 200);
+			ImGui::SliderInt("Player Starting Shield", &Globals::playerSpawnShield, 0, 200);
+			ImGui::SliderFloat("Building Cost", &Globals::buildingCost, 0.0f, 50.0f, "%.0f");
+			ImGui::SliderFloat("Repair Cost Multiplier", &Globals::repairCostMultiplier, 0.0f, 2.0f, "%.2f");
+			ImGui::SliderInt("Bot Max Health", &Globals::botMaxHealth, 0, 200);
+			ImGui::SliderInt("Bot Spawn Health", &Globals::botSpawnHealth, 0, 200);
 			ImGui::InputText("Item to Give", &ItemToGrantEveryone);
 			ImGui::InputInt("Amount to Give", &AmountToGrantEveryone);
 
