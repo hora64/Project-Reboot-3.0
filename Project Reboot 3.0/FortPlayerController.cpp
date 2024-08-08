@@ -787,11 +787,11 @@ void AFortPlayerController::ServerAttemptAircraftJumpHook(AFortPlayerController*
 
 	if (NewPawnAsFort)
 	{
-		NewPawnAsFort->SetHealth(Globals::playerSpawnHealth); // needed with server restart player?
+		NewPawnAsFort->SetHealth((float)Globals::playerSpawnHealth); // needed with server restart player?
 		
 		if (Globals::bLateGame)
 		{
-			NewPawnAsFort->SetShield(Globals::playerSpawnShield);
+			NewPawnAsFort->SetShield((float)Globals::playerSpawnShield);
 
 			NewPawnAsFort->TeleportTo(AircraftToJumpFrom->GetActorLocation(), FRotator());
 		}
